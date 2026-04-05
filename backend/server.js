@@ -1,22 +1,36 @@
 const express = require("express");
 const path = require("path");
+const { deployProject } = require("./deploy");
+
 const app = express();
 
 // Middleware
 app.use(express.json());
 
-// ✅ Serve frontend folder
+// ✅ Serve frontend
 app.use(express.static(path.join(__dirname, "../frontend")));
 
-// ✅ Test API
+// ✅ API test route
 app.get("/api/test", (req, res) => {
-  res.json({ message: "Backend working" });
+  res.json({ message: "Backend working!" });
 });
 
-// ✅ Catch ALL routes → send index.html
+// ✅ DEPLOY ROUTE (AI auto-fix + deploy)
+app.post("/deploy", async (req, res) => {
+  try {
+    await deployProject("my-project");
+    res.send("✅ Project checked, fixed, and deployed!");
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("❌ Deployment failed");
+  }
+});
+
+// ✅ Catch-all → fixes “Not Found”
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "../frontend/index.html"));
 });
 
+// Start server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log("Running on port " + PORT));
+app.listen(PORT, () => console.log("🚀 Server running on port " + PORT));
