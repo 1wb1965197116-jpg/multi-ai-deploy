@@ -1,90 +1,129 @@
-let selectedPlatform = "github";
+let platform = "github";
 
-function deploy(platform) {
-  selectedPlatform = platform;
-  document.getElementById("output").innerText = "Selected: " + platform;
+// ===== AUTH =====
+async function register() {
+  await fetch("/register", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({
+      username: user.value,
+      password: pass.value
+    })
+  });
+  alert("Registered");
+}
+
+async function login() {
+  const res = await fetch("/login", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({
+      username: user.value,
+      password: pass.value
+    })
+  });
+
+  alert(await res.text());
+}
+
+// ===== DASHBOARD =====
+async function loadDashboard() {
+  const res = await fetch("/dashboard");
+  const data = await res.json();
+
+  dashboard.innerHTML = `
+    Users: ${data.users}<br>
+    Revenue: ${data.revenue}<br>
+    Status: ${data.status}
+  `;
+}
+
+// ===== MONETIZATION =====
+async function checkout() {
+  const res = await fetch("/create-checkout", { method: "POST" });
+  alert(await res.text());
+}
+
+// ===== AI BUILD =====
+async function aiBuild() {
+  const code = fileContent.value;
+
+  const res = await fetch("/ai-build", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({ code })
+  });
+
+  output.innerText = await res.text();
+}
+
+// ===== SAAS =====
+async function buildSaaS() {
+  const res = await fetch("/saas-build", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({ prompt: saasPrompt.value })
+  });
+
+  output.innerText = await res.text();
+}
+
+// ===== DEPLOY =====
+function deploy(p) {
+  platform = p;
 }
 
 async function checkBeforeDeploy() {
   const res = await fetch("/status");
   const data = await res.json();
 
-  const statusBox = document.getElementById("statusBox");
-  statusBox.innerHTML = "";
-
-  let hasError = false;
-
-  data.forEach(s => {
-    const d = document.createElement("div");
-    d.innerText = s.msg;
-    d.style.color = s.color;
-    statusBox.appendChild(d);
-
-    if (s.color === "red") hasError = true;
-  });
+  let hasError = data.some(d => d.color === "red");
 
   if (hasError) {
-    document.getElementById("fixPrompt").style.display = "block";
-  } else {
-    runDeploy();
+    if (confirm("Fix project?")) {
+      await fetch("/fix", { method: "POST" });
+    }
   }
-}
 
-async function fixProject() {
-  document.getElementById("output").innerText = "AI fixing project...";
-  await fetch("/fix", { method: "POST" });
   runDeploy();
 }
 
-function cancelFix() {
-  document.getElementById("fixPrompt").style.display = "none";
-}
-
 async function runDeploy() {
-  document.getElementById("output").innerText = "Deploying...";
-
   const res = await fetch("/deploy", {
     method: "POST",
     headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({ platform: selectedPlatform })
+    body: JSON.stringify({ platform })
   });
 
-  document.getElementById("output").innerText = await res.text();
+  output.innerText = await res.text();
 }
 
-// Drag & Drop
-const drop = document.getElementById("dropZone");
+// ===== CHAT =====
+async function sendChat() {
+  const msg = chatInput.value;
 
-drop.ondragover = e => {
-  e.preventDefault();
-  drop.style.background = "#222";
-};
+  const res = await fetch("/chat", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({ message: msg })
+  });
 
-drop.ondrop = e => {
+  const reply = await res.text();
+
+  chatBox.innerHTML += `<div>🧑 ${msg}</div>`;
+  chatBox.innerHTML += `<div>🤖 ${reply}</div>`;
+}
+
+// ===== DRAG DROP =====
+dropZone.ondrop = e => {
   e.preventDefault();
   const file = e.dataTransfer.files[0];
 
   const reader = new FileReader();
   reader.onload = () => {
-    document.getElementById("fileContent").value = reader.result;
+    fileContent.value = reader.result;
   };
   reader.readAsText(file);
 };
 
-// API KEY
-async function saveKey() {
-  const key = document.getElementById("apiKey").value;
-
-  await fetch("/save-key", {
-    method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({ key })
-  });
-
-  alert("🔐 Saved");
-}
-
-async function runWithKey() {
-  await fetch("/use-key", { method: "POST" });
-  alert("✅ Executed");
-}
+dropZone.ondragover = e => e.preventDefault();
