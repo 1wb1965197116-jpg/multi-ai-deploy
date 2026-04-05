@@ -1,28 +1,26 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Multi-AI Deploy</title>
+<title>Multi AI Deploy</title>
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<h1>Multi-AI Deploy</h1>
 
-<input id="projectName" placeholder="Project Name">
-<textarea id="fileContent" placeholder="Paste your script here"></textarea>
-<input id="fileName" placeholder="File Name (example.js)">
-<button id="saveBtn">Save File</button>
+<h1>AI Multi-Project Deployer</h1>
 
-<select id="platform">
-    <option>GitHub</option>
-    <option>Render</option>
-    <option>Vercel</option>
-    <option>Supabase</option>
-</select>
-<button id="deployBtn">Deploy</button>
+<textarea id="fileContent"></textarea>
+
+<div id="dropZone">Drag Script Here</div>
+
+<button onclick="checkStatus()">Check Status</button>
+<button onclick="deploy()">Deploy</button>
+
+<h3>API Key</h3>
+<input id="apiKey">
+<button onclick="saveKey()">Save</button>
 
 <div id="output"></div>
+
 <script src="app.js"></script>
 </body>
 </html>
