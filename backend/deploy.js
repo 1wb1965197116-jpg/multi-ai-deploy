@@ -1,26 +1,21 @@
 const path = require("path");
+
 const { checkAndFixProject } = require("./deployChecker");
 const { createRepo, pushToGitHub } = require("./githubDeploy");
 const { triggerRenderDeploy } = require("./renderDeploy");
 
-async function deployProject(projectName) {
-  const rootDir = path.join(__dirname, "..");
+async function deployProject() {
+  const root = path.join(__dirname, "..");
 
-  // ✅ Step 1: Fix project
-  const fixes = checkAndFixProject(rootDir);
+  const fixes = checkAndFixProject(root);
   console.log("Fixes:", fixes);
 
-  // ✅ Step 2: Create GitHub repo
   const repoUrl = await createRepo();
-  console.log("Repo created:", repoUrl);
-
-  // ✅ Step 3: Push code
   pushToGitHub(repoUrl);
 
-  // ✅ Step 4: Deploy to Render
   await triggerRenderDeploy();
 
-  console.log("🚀 FULL AUTO DEPLOY COMPLETE");
+  console.log("🚀 Deployment complete");
 }
 
 module.exports = { deployProject };
