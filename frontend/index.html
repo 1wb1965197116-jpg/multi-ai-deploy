@@ -1,44 +1,48 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>AI Multi-Project Deployer</title>
+<title>SaaS Empire</title>
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-<h1>🚀 AI Multi-Project Deployer</h1>
+<h1>🚀 SaaS Empire Dashboard</h1>
 
-<h3>Project Folder:</h3>
-<input id="projectName" value="MyWebApp">
+<h3>👤 User</h3>
+<input id="user" placeholder="username">
+<input id="pass" placeholder="password">
+<button class="btn-purple" onclick="register()">Register</button>
+<button class="btn-ai" onclick="login()">Login</button>
 
-<h3>Paste Code / Script Here:</h3>
-<textarea id="fileContent" placeholder="function fetchData() { console.log('Fetching data...'); }"></textarea>
+<h3>💳 Monetization</h3>
+<button class="btn-green" onclick="checkout()">Start Subscription</button>
 
-<div id="dropZone">📂 Drag & Drop Script Here</div>
+<h3>📊 Dashboard</h3>
+<button onclick="loadDashboard()">Load Dashboard</button>
+<div id="dashboard"></div>
 
-<h3>Status:</h3>
-<div id="statusBox"></div>
+<h3>🤖 SaaS Builder</h3>
+<input id="saasPrompt" placeholder="Build SaaS idea...">
+<button class="btn-purple" onclick="buildSaaS()">Generate SaaS</button>
 
-<div id="fixPrompt" style="display:none;">
-  <p>⚠️ Files incomplete. Do you want AI to fix?</p>
-  <button onclick="fixProject()">Yes, Fix It</button>
-  <button onclick="cancelFix()">Cancel</button>
-</div>
+<h3>🧠 AI Code Builder</h3>
+<textarea id="fileContent"></textarea>
+<button class="btn-ai" onclick="aiBuild()">AI Build</button>
 
-<h3>Deploy To:</h3>
-<div class="deploy-buttons">
-  <button onclick="deploy('github')">GitHub</button>
-  <button onclick="deploy('render')">Render</button>
-  <button onclick="deploy('vercel')">Vercel</button>
-  <button onclick="deploy('supabase')">Supabase</button>
-</div>
+<div id="dropZone">📂 Drag Script Here</div>
 
-<button class="mainDeploy" onclick="checkBeforeDeploy()">🚀 Deploy Now</button>
+<h3>🚀 Deploy</h3>
+<button class="btn-github" onclick="deploy('github')">GitHub</button>
+<button class="btn-render" onclick="deploy('render')">Render</button>
+<button class="btn-vercel" onclick="deploy('vercel')">Vercel</button>
+<button class="btn-supabase" onclick="deploy('supabase')">Supabase</button>
 
-<h3>🔐 API Key Console</h3>
-<input id="apiKey" placeholder="Enter API Key">
-<button onclick="saveKey()">Save Encrypted</button>
-<button onclick="runWithKey()">Execute</button>
+<button class="mainDeploy" onclick="checkBeforeDeploy()">Deploy Now</button>
+
+<h3>💬 Chatbot</h3>
+<div id="chatBox"></div>
+<input id="chatInput">
+<button onclick="sendChat()">Send</button>
 
 <div id="output"></div>
 
