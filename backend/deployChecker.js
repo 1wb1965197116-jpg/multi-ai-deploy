@@ -1,78 +1,55 @@
 const fs = require("fs");
 const path = require("path");
 
-function ensureFile(filePath, content) {
-  if (!fs.existsSync(filePath)) {
-    fs.writeFileSync(filePath, content);
-    return `Created: ${filePath}`;
+function ensure(file, content) {
+  if (!fs.existsSync(file)) {
+    fs.writeFileSync(file, content);
+    return "Created " + file;
   }
-  return null;
 }
 
-function checkAndFixProject(rootDir) {
+function checkAndFixProject(root) {
   let fixes = [];
 
-  // ✅ Ensure frontend folder + index.html
-  const frontendPath = path.join(rootDir, "frontend");
-  if (!fs.existsSync(frontendPath)) {
-    fs.mkdirSync(frontendPath);
-    fixes.push("Created frontend folder");
-  }
-
-  const indexPath = path.join(frontendPath, "index.html");
   fixes.push(
-    ensureFile(
-      indexPath,
-      `<h1>Multi-AI Deploy Running</h1>`
+    ensure(
+      path.join(root, "frontend/index.html"),
+      "<h1>Multi-AI Running</h1>"
     )
   );
 
-  // ✅ Ensure backend server
-  const backendPath = path.join(rootDir, "backend");
-  if (!fs.existsSync(backendPath)) {
-    fs.mkdirSync(backendPath);
-    fixes.push("Created backend folder");
-  }
-
-  const serverPath = path.join(backendPath, "server.js");
   fixes.push(
-    ensureFile(
-      serverPath,
-`const express = require("express");
-const path = require("path");
-const app = express();
-
-app.use(express.static(path.join(__dirname, "../frontend")));
-
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/index.html"));
-});
-
-const PORT = process.env.PORT || 5000;
-app.listen(PORT);`
-    )
-  );
-
-  // ✅ Ensure package.json
-  const packagePath = path.join(rootDir, "package.json");
-  fixes.push(
-    ensureFile(
-      packagePath,
-`{
-  "name": "multi-ai-deploy",
-  "version": "1.0.0",
-  "main": "backend/server.js",
-  "scripts": {
-    "start": "node backend/server.js"
-  },
-  "dependencies": {
-    "express": "^4.18.2"
-  }
-}`
+    ensure(
+      path.join(root, "package.json"),
+      JSON.stringify({
+        name: "multi-ai",
+        version: "1.0.0",
+        main: "backend/server.js",
+        scripts: { start: "node backend/server.js" },
+        dependencies: { express: "^4.18.2" }
+      })
     )
   );
 
   return fixes.filter(Boolean);
 }
 
-module.exports = { checkAndFixProject };
+function getProjectStatus(root) {
+  let status = [];
+
+  if (!fs.existsSync(path.join(root, "package.json"))) {
+    status.push({ msg: "Missing package.json", color: "red" });
+  }
+
+  if (!fs.existsSync(path.join(root, "frontend/index.html"))) {
+    status.push({ msg: "Missing index.html", color: "red" });
+  }
+
+  if (status.length === 0) {
+    status.push({ msg: "Ready for deploy", color: "green" });
+  }
+
+  return status;
+}
+
+module.exports = { checkAndFixProject, getProjectStatus };
