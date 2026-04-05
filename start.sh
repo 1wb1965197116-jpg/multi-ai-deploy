@@ -1,3 +1,5 @@
 #!/bin/bash
-npm install
+
+npm install axios dotenv express
+
 npm start
