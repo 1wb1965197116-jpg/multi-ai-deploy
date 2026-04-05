@@ -1,21 +1,25 @@
-const path = require("path");
-
-const { checkAndFixProject } = require("./deployChecker");
-const { createRepo, pushToGitHub } = require("./githubDeploy");
-const { triggerRenderDeploy } = require("./renderDeploy");
-
-async function deployProject() {
+async function deployProject(platform) {
   const root = path.join(__dirname, "..");
 
   const fixes = checkAndFixProject(root);
   console.log("Fixes:", fixes);
 
-  const repoUrl = await createRepo();
-  pushToGitHub(repoUrl);
+  if (platform === "github") {
+    const repoUrl = await createRepo();
+    pushToGitHub(repoUrl);
+  }
 
-  await triggerRenderDeploy();
+  if (platform === "render") {
+    await triggerRenderDeploy();
+  }
 
-  console.log("🚀 Deployment complete");
+  if (platform === "vercel") {
+    console.log("Deploy to Vercel (add CLI later)");
+  }
+
+  if (platform === "supabase") {
+    console.log("Deploy to Supabase (API setup needed)");
+  }
+
+  console.log("🚀 Done:", platform);
 }
-
-module.exports = { deployProject };
