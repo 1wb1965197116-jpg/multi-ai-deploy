@@ -1,25 +1,64 @@
-async function deploy() {
-  const res = await fetch("/deploy", { method: "POST" });
-  document.getElementById("output").innerText = await res.text();
+let selectedPlatform = "github";
+
+function deploy(platform) {
+  selectedPlatform = platform;
+  document.getElementById("output").innerText = "Selected: " + platform;
 }
 
-async function checkStatus() {
+async function checkBeforeDeploy() {
   const res = await fetch("/status");
   const data = await res.json();
 
-  const out = document.getElementById("output");
-  out.innerHTML = "";
+  const statusBox = document.getElementById("statusBox");
+  statusBox.innerHTML = "";
+
+  let hasError = false;
 
   data.forEach(s => {
     const d = document.createElement("div");
     d.innerText = s.msg;
     d.style.color = s.color;
-    out.appendChild(d);
+    statusBox.appendChild(d);
+
+    if (s.color === "red") hasError = true;
   });
+
+  if (hasError) {
+    document.getElementById("fixPrompt").style.display = "block";
+  } else {
+    runDeploy();
+  }
 }
 
-// drag drop
+async function fixProject() {
+  document.getElementById("output").innerText = "AI fixing project...";
+  await fetch("/fix", { method: "POST" });
+  runDeploy();
+}
+
+function cancelFix() {
+  document.getElementById("fixPrompt").style.display = "none";
+}
+
+async function runDeploy() {
+  document.getElementById("output").innerText = "Deploying...";
+
+  const res = await fetch("/deploy", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({ platform: selectedPlatform })
+  });
+
+  document.getElementById("output").innerText = await res.text();
+}
+
+// Drag & Drop
 const drop = document.getElementById("dropZone");
+
+drop.ondragover = e => {
+  e.preventDefault();
+  drop.style.background = "#222";
+};
 
 drop.ondrop = e => {
   e.preventDefault();
@@ -32,8 +71,7 @@ drop.ondrop = e => {
   reader.readAsText(file);
 };
 
-drop.ondragover = e => e.preventDefault();
-
+// API KEY
 async function saveKey() {
   const key = document.getElementById("apiKey").value;
 
@@ -43,5 +81,10 @@ async function saveKey() {
     body: JSON.stringify({ key })
   });
 
-  alert("Saved");
+  alert("🔐 Saved");
+}
+
+async function runWithKey() {
+  await fetch("/use-key", { method: "POST" });
+  alert("✅ Executed");
 }
