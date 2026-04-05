@@ -1,31 +1,21 @@
-import express from 'express';
-import cors from 'cors';
-import { saveFile, checkFiles } from './fileManager.js';
-import { deployToPlatform } from './deploy.js';
-import { generateMissingFiles } from './aiGenerator.js';
-
+const express = require("express");
+const path = require("path");
 const app = express();
-app.use(cors());
+
 app.use(express.json());
 
-app.post('/save-file', async (req, res) => {
-    const { projectName, fileName, content } = req.body;
-    const saved = await saveFile(projectName, fileName, content);
-    res.json({ success: saved });
+// Serve frontend
+app.use(express.static(path.join(__dirname, "../frontend")));
+
+// API test route
+app.get("/api/test", (req, res) => {
+  res.json({ message: "Backend working!" });
 });
 
-app.post('/deploy', async (req, res) => {
-    const { projectName, platform } = req.body;
-
-    let missingFiles = await checkFiles(projectName);
-    if (missingFiles.length > 0) {
-        // AI auto-generates missing files
-        await generateMissingFiles(projectName, missingFiles);
-        missingFiles = await checkFiles(projectName); // recheck
-    }
-
-    const result = await deployToPlatform(projectName, platform);
-    res.json(result);
+// Fallback to index.html
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/index.html"));
 });
 
-app.listen(5000, () => console.log('Backend running on port 5000'));
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log("Server running on port " + PORT));
