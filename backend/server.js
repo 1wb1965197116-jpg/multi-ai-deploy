@@ -3,21 +3,49 @@ require("dotenv").config();
 const express = require("express");
 const path = require("path");
 const crypto = require("crypto");
+const fs = require("fs");
 
-const app = express(); // ✅ THIS WAS MISSING
+const app = express();
+app.use(express.json());
+
+// ===== IN-MEMORY DB (simple) =====
+let users = [];
+let encryptedKey = "";
 
 // ===== IMPORTS =====
 const { deployProject } = require("./deploy");
 const { getProjectStatus, checkAndFixProject } = require("./deployChecker");
 const { detectProjectType, buildProject } = require("./aiAgents");
 
-// ===== MIDDLEWARE =====
-app.use(express.json());
+// ===== SERVE FRONTEND =====
 app.use(express.static(path.join(__dirname, "../frontend")));
 
-// ===== TEST =====
-app.get("/api/test", (req, res) => {
-  res.json({ message: "Backend working!" });
+// ===== AUTH =====
+app.post("/register", (req, res) => {
+  const { username, password } = req.body;
+  users.push({ username, password });
+  res.send("✅ User registered");
+});
+
+app.post("/login", (req, res) => {
+  const { username, password } = req.body;
+  const user = users.find(u => u.username === username && u.password === password);
+  if (user) return res.send("✅ Login success");
+  res.status(401).send("❌ Invalid login");
+});
+
+// ===== DASHBOARD =====
+app.get("/dashboard", (req, res) => {
+  res.json({
+    users: users.length,
+    status: "SaaS Running",
+    revenue: "$0 (connect Stripe)"
+  });
+});
+
+// ===== STRIPE PLACEHOLDER =====
+app.post("/create-checkout", (req, res) => {
+  res.send("💳 Stripe checkout placeholder (add real Stripe API key)");
 });
 
 // ===== AI BUILD =====
@@ -31,16 +59,31 @@ app.post("/ai-build", (req, res) => {
   res.send(`🤖 Built ${type} app`);
 });
 
+// ===== SAAS BUILDER =====
+app.post("/saas-build", (req, res) => {
+  const { prompt } = req.body;
+  const projectPath = path.join(__dirname, "../generated-app");
+
+  if (!fs.existsSync(projectPath)) fs.mkdirSync(projectPath);
+
+  fs.writeFileSync(
+    path.join(projectPath, "index.html"),
+    `<h1>${prompt}</h1><p>SaaS App Running</p>`
+  );
+
+  res.send("🚀 SaaS Generated");
+});
+
 // ===== STATUS =====
 app.get("/status", (req, res) => {
   const status = getProjectStatus(path.join(__dirname, ".."));
   res.json(status);
 });
 
-// ===== FIX PROJECT =====
+// ===== FIX =====
 app.post("/fix", (req, res) => {
   checkAndFixProject(path.join(__dirname, ".."));
-  res.send("✅ Project fixed");
+  res.send("✅ Fixed");
 });
 
 // ===== DEPLOY =====
@@ -59,22 +102,16 @@ app.post("/deploy", async (req, res) => {
 app.post("/chat", (req, res) => {
   const msg = req.body.message;
 
-  let reply = "🤖 Ready to build and deploy apps.";
+  let reply = "🤖 SaaS system ready.";
 
-  if (msg.includes("build")) {
-    reply = "Paste code and press AI Build.";
-  }
-
-  if (msg.includes("deploy")) {
-    reply = "Choose platform and press Deploy.";
-  }
+  if (msg.includes("money")) reply = "Connect Stripe to start earning.";
+  if (msg.includes("build")) reply = "Use AI Build or SaaS Builder.";
+  if (msg.includes("deploy")) reply = "Choose a platform and deploy.";
 
   res.send(reply);
 });
 
-// ===== API KEY ENCRYPT =====
-let encryptedKey = "";
-
+// ===== API KEY =====
 app.post("/save-key", (req, res) => {
   const cipher = crypto.createCipher("aes-256-ctr", "secret123");
   encryptedKey =
@@ -83,20 +120,11 @@ app.post("/save-key", (req, res) => {
   res.send("🔐 Key saved");
 });
 
-app.post("/use-key", (req, res) => {
-  const decipher = crypto.createDecipher("aes-256-ctr", "secret123");
-  const decrypted =
-    decipher.update(encryptedKey, "hex", "utf8") + decipher.final("utf8");
-
-  console.log("Using key:", decrypted);
-  res.send("✅ Key executed");
-});
-
-// ===== FIX NOT FOUND =====
+// ===== FALLBACK =====
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "../frontend/index.html"));
 });
 
-// ===== START SERVER =====
+// ===== START =====
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log("🚀 Running on port " + PORT));
+app.listen(PORT, () => console.log("🚀 Running on " + PORT));
