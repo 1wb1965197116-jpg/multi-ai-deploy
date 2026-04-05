@@ -1,3 +1,4 @@
+// ===== GLOBAL =====
 let platform = "github";
 
 // ===== AUTH =====
@@ -10,7 +11,8 @@ async function register() {
       password: pass.value
     })
   });
-  alert("Registered");
+
+  alert("✅ Registered");
 }
 
 async function login() {
@@ -23,25 +25,45 @@ async function login() {
     })
   });
 
-  alert(await res.text());
+  const data = await res.json();
+
+  if (data.token) {
+    localStorage.setItem("token", data.token);
+    alert("✅ Logged in");
+  } else {
+    alert("❌ Login failed");
+  }
 }
 
 // ===== DASHBOARD =====
 async function loadDashboard() {
-  const res = await fetch("/dashboard");
+  const res = await fetch("/dashboard", {
+    headers: {
+      Authorization: localStorage.getItem("token")
+    }
+  });
+
   const data = await res.json();
 
   dashboard.innerHTML = `
-    Users: ${data.users}<br>
-    Revenue: ${data.revenue}<br>
-    Status: ${data.status}
+    <b>User:</b> ${data.user || "N/A"}<br>
+    <b>Message:</b> ${data.message || "No data"}
   `;
 }
 
-// ===== MONETIZATION =====
+// ===== STRIPE =====
 async function checkout() {
-  const res = await fetch("/create-checkout", { method: "POST" });
-  alert(await res.text());
+  const res = await fetch("/create-checkout", {
+    method: "POST"
+  });
+
+  const data = await res.json();
+
+  if (data.url) {
+    window.location.href = data.url;
+  } else {
+    alert("❌ Stripe error");
+  }
 }
 
 // ===== AI BUILD =====
@@ -57,7 +79,7 @@ async function aiBuild() {
   output.innerText = await res.text();
 }
 
-// ===== SAAS =====
+// ===== SAAS BUILDER =====
 async function buildSaaS() {
   const res = await fetch("/saas-build", {
     method: "POST",
@@ -71,6 +93,7 @@ async function buildSaaS() {
 // ===== DEPLOY =====
 function deploy(p) {
   platform = p;
+  output.innerText = "Selected platform: " + p;
 }
 
 async function checkBeforeDeploy() {
@@ -80,7 +103,8 @@ async function checkBeforeDeploy() {
   let hasError = data.some(d => d.color === "red");
 
   if (hasError) {
-    if (confirm("Fix project?")) {
+    const fix = confirm("⚠️ Files incomplete. Fix automatically?");
+    if (fix) {
       await fetch("/fix", { method: "POST" });
     }
   }
@@ -89,6 +113,8 @@ async function checkBeforeDeploy() {
 }
 
 async function runDeploy() {
+  output.innerText = "🚀 Deploying...";
+
   const res = await fetch("/deploy", {
     method: "POST",
     headers: {"Content-Type":"application/json"},
@@ -98,7 +124,7 @@ async function runDeploy() {
   output.innerText = await res.text();
 }
 
-// ===== CHAT =====
+// ===== CHATBOT =====
 async function sendChat() {
   const msg = chatInput.value;
 
@@ -114,16 +140,33 @@ async function sendChat() {
   chatBox.innerHTML += `<div>🤖 ${reply}</div>`;
 }
 
-// ===== DRAG DROP =====
+// ===== DRAG & DROP =====
+dropZone.ondragover = e => {
+  e.preventDefault();
+  dropZone.style.background = "#222";
+};
+
 dropZone.ondrop = e => {
   e.preventDefault();
+
   const file = e.dataTransfer.files[0];
 
   const reader = new FileReader();
   reader.onload = () => {
     fileContent.value = reader.result;
   };
+
   reader.readAsText(file);
 };
 
-dropZone.ondragover = e => e.preventDefault();
+// ===== STATUS CHECK (OPTIONAL BUTTON SUPPORT) =====
+async function checkStatus() {
+  const res = await fetch("/status");
+  const data = await res.json();
+
+  output.innerHTML = "";
+
+  data.forEach(d => {
+    output.innerHTML += `<div style="color:${d.color}">${d.msg}</div>`;
+  });
+}
