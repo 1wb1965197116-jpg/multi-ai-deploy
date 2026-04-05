@@ -1,23 +1,44 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Multi AI Deploy</title>
+<title>AI Multi-Project Deployer</title>
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-<h1>AI Multi-Project Deployer</h1>
+<h1>🚀 AI Multi-Project Deployer</h1>
 
-<textarea id="fileContent"></textarea>
+<h3>Project Folder:</h3>
+<input id="projectName" value="MyWebApp">
 
-<div id="dropZone">Drag Script Here</div>
+<h3>Paste Code / Script Here:</h3>
+<textarea id="fileContent" placeholder="function fetchData() { console.log('Fetching data...'); }"></textarea>
 
-<button onclick="checkStatus()">Check Status</button>
-<button onclick="deploy()">Deploy</button>
+<div id="dropZone">📂 Drag & Drop Script Here</div>
 
-<h3>API Key</h3>
-<input id="apiKey">
-<button onclick="saveKey()">Save</button>
+<h3>Status:</h3>
+<div id="statusBox"></div>
+
+<div id="fixPrompt" style="display:none;">
+  <p>⚠️ Files incomplete. Do you want AI to fix?</p>
+  <button onclick="fixProject()">Yes, Fix It</button>
+  <button onclick="cancelFix()">Cancel</button>
+</div>
+
+<h3>Deploy To:</h3>
+<div class="deploy-buttons">
+  <button onclick="deploy('github')">GitHub</button>
+  <button onclick="deploy('render')">Render</button>
+  <button onclick="deploy('vercel')">Vercel</button>
+  <button onclick="deploy('supabase')">Supabase</button>
+</div>
+
+<button class="mainDeploy" onclick="checkBeforeDeploy()">🚀 Deploy Now</button>
+
+<h3>🔐 API Key Console</h3>
+<input id="apiKey" placeholder="Enter API Key">
+<button onclick="saveKey()">Save Encrypted</button>
+<button onclick="runWithKey()">Execute</button>
 
 <div id="output"></div>
 
