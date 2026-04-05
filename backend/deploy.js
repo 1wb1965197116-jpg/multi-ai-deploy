@@ -1,21 +1,26 @@
-const { checkAndFixProject } = require("./deployChecker");
 const path = require("path");
+const { checkAndFixProject } = require("./deployChecker");
+const { createRepo, pushToGitHub } = require("./githubDeploy");
+const { triggerRenderDeploy } = require("./renderDeploy");
 
 async function deployProject(projectName) {
   const rootDir = path.join(__dirname, "..");
 
-  // ✅ Run AI fix
+  // ✅ Step 1: Fix project
   const fixes = checkAndFixProject(rootDir);
+  console.log("Fixes:", fixes);
 
-  if (fixes.length > 0) {
-    console.log("Auto-fixes applied:");
-    fixes.forEach(f => console.log(f));
-  } else {
-    console.log("Project already deployable");
-  }
+  // ✅ Step 2: Create GitHub repo
+  const repoUrl = await createRepo();
+  console.log("Repo created:", repoUrl);
 
-  // 🚀 Continue deploy (GitHub / Render logic here)
-  console.log("Deploying project...");
+  // ✅ Step 3: Push code
+  pushToGitHub(repoUrl);
+
+  // ✅ Step 4: Deploy to Render
+  await triggerRenderDeploy();
+
+  console.log("🚀 FULL AUTO DEPLOY COMPLETE");
 }
 
 module.exports = { deployProject };
