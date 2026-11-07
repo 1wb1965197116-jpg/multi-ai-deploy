@@ -75,8 +75,7 @@ app.post("/admin-login", (req, res) => {
 
 // ===== CHANGE PIN =====
 app.post("/admin-change-pin", (req, res) => {
-  ADMIN_PIN = req.body.newPin;
-  res.send("✅ PIN updated");
+  res.status(503).send("PIN changes disabled until secure administration is implemented");
 });
 
 // ===== AUTH MIDDLEWARE =====
@@ -128,10 +127,7 @@ app.post("/create-checkout", auth, async (req, res) => {
 
 // ===== SUCCESS =====
 app.get("/success", (req, res) => {
-  const username = req.query.user;
-  if (username) upgradeUser(username);
-
-  res.send("🎉 Subscription active!");
+  res.status(503).send("Payment verification is not implemented; no subscription was activated.");
 });
 
 // ===== CHAT (MONETIZED AI) =====
@@ -174,10 +170,8 @@ app.get("/admin-stats", auth, (req, res) => {
 // ===== DEPLOY (KEEP YOUR SYSTEM) =====
 const { deployProject } = require("./deploy");
 
-app.post("/deploy", async (req, res) => {
-  const platform = req.body.platform || "github";
-  await deployProject(platform);
-  res.send("🚀 Deployed to " + platform);
+app.post("/deploy", (req, res) => {
+  res.status(503).send("Deployment is disabled until authenticated and explicitly authorized.");
 });
 
 // ===== FALLBACK =====
