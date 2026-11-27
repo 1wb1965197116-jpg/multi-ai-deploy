@@ -1,25 +1,13 @@
+// Deployment actions are intentionally blocked until the integrations are
+// replaced with reviewed, token-safe GitHub and Render API workflows.
 async function deployProject(platform) {
-  const root = path.join(__dirname, "..");
-
-  const fixes = checkAndFixProject(root);
-  console.log("Fixes:", fixes);
-
-  if (platform === "github") {
-    const repoUrl = await createRepo();
-    pushToGitHub(repoUrl);
+  const allowed = ["github", "render"];
+  if (!allowed.includes(platform)) {
+    throw new Error("Unsupported deployment platform.");
   }
-
-  if (platform === "render") {
-    await triggerRenderDeploy();
-  }
-
-  if (platform === "vercel") {
-    console.log("Deploy to Vercel (add CLI later)");
-  }
-
-  if (platform === "supabase") {
-    console.log("Deploy to Supabase (API setup needed)");
-  }
-
-  console.log("🚀 Done:", platform);
+  throw new Error(
+    "Automated deployment is disabled in this repository. Use the reviewed GitHub/Render deployment workflow."
+  );
 }
+
+module.exports = { deployProject };
