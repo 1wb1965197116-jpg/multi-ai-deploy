@@ -1,29 +1,12 @@
-const axios = require("axios");
-const { execSync } = require("child_process");
-
+// The previous implementation used shell commands and persisted a GitHub token
+// in .git/config. Keep this integration disabled until a secure API-only uploader
+// is implemented and reviewed.
 async function createRepo() {
-  const res = await axios.post(
-    "https://api.github.com/user/repos",
-    { name: process.env.REPO_NAME },
-    { headers: { Authorization: `token ${process.env.GITHUB_TOKEN}` } }
-  );
-
-  return res.data.clone_url;
+  throw new Error("GitHub repository creation is not enabled in this prototype.");
 }
 
-function pushToGitHub(repoUrl) {
-  execSync("git init");
-  execSync("git add .");
-  execSync('git commit -m "auto deploy"');
-
-  const authUrl = repoUrl.replace(
-    "https://",
-    `https://${process.env.GITHUB_USERNAME}:${process.env.GITHUB_TOKEN}@`
-  );
-
-  execSync(`git remote add origin ${authUrl}`);
-  execSync("git branch -M main");
-  execSync("git push -u origin main");
+async function pushToGitHub() {
+  throw new Error("GitHub file upload is not enabled in this prototype.");
 }
 
 module.exports = { createRepo, pushToGitHub };
