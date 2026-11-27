@@ -164,7 +164,8 @@ app.post("/deploy", auth, async (req, res) => {
     await deployProject(platform);
     res.json({ status: "Deployment requested", platform });
   } catch (err) {
-    res.status(502).json({ error: "Deployment failed" });
+    console.error("Deployment blocked:", err.message);
+    res.status(501).json({ error: err.message || "Deployment integration is not enabled." });
   }
 });
 
